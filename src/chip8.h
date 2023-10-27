@@ -7,6 +7,9 @@
 #include <vector>
 #include <stack>
 #include <string>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
 
 struct Nibbles {
     uint16_t first{0};
@@ -21,7 +24,7 @@ class Chip8 {
 private:
     uint8_t m_memory[4*1024]{0};        // 4 kilobytes of RAM
     uint8_t m_registers[16]{0};         // General-purpose variables from V0 to VF 
-    std::stack<uint16_t> m_stack[16];   // Used to call subroutines and return from them
+    std::stack<uint16_t> m_stack;   // Used to call subroutines and return from them
     uint8_t m_delay_timer{0};           // Timer that decrements at a rate of 60hz
     uint8_t m_sound_timer{0};           // Similar to the delay timer
     uint16_t m_pc{0x200};                   // Program counter, points at the current intruction in mem
@@ -43,6 +46,7 @@ public:
 
     void load_rom(std::ifstream &rom_file);
     void tick();
+    void update_timers();
 };
 
 #endif // !CHIP8

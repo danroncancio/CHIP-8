@@ -6,7 +6,7 @@
 #include <fstream>
 #include <vector>
 
-const size_t PIXEL_SCALE = 8;
+const size_t PIXEL_SCALE = 16;
 
 int main (int argc, char *argv[]) {
 
@@ -30,6 +30,13 @@ int main (int argc, char *argv[]) {
         if (IsKeyPressed(KEY_SPACE)) {
             chip8.tick();
         }
+
+        // Simulate a 500hz clock
+        for (auto i = 0; i <= 8; i++) {
+            chip8.tick();
+        }
+
+        chip8.update_timers();
 
         // Drawing
         for (auto y = 0; y < chip8.HEIGHT; y++) {
