@@ -40,6 +40,8 @@ public:
     static const size_t WIDTH{64};
     static const size_t HEIGHT{32};
     uint8_t display_buffer[WIDTH*HEIGHT]{0};
+    bool keys[16]{false};
+    bool wait{false};
 
     Chip8();
     ~Chip8();

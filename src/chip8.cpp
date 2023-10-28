@@ -1,4 +1,5 @@
 #include "chip8.h"
+#include <cstdint>
 
 Chip8::Chip8() {
     // Load built-in font in memory.
@@ -56,11 +57,12 @@ void Chip8::update_timers() {
     }
 }
 
+
 void Chip8::fetch() {
     m_opcode = 0;
     m_opcode |= m_memory[m_pc] << 8;
     m_opcode |= m_memory[m_pc + 1];
-    m_pc += 2;
+    if (!wait) m_pc += 2;
 
     //printf("Opcode: 0x%02X \n", m_opcode);
 }
@@ -258,6 +260,20 @@ void Chip8::execute() {
 
             }
             break;
+        case 0xE:
+            switch (m_nibbles.nn) {
+                case 0x9E:
+                    if (keys[m_registers[m_nibbles.second]]) {
+                        m_pc += 2;
+                    }
+                    break;
+                case 0xA1:
+                    if (!keys[m_registers[m_nibbles.second]]) {
+                        m_pc += 2;
+                    }
+                    break;
+            }
+            break;
         case 0xF:
             switch (m_nibbles.nn) {
                 case 0x07:
@@ -266,7 +282,11 @@ void Chip8::execute() {
                     break;
                 case 0x0A:
                     // Wait for key press and store the key value in VX
-                    // TODO: Implement instruction
+                    wait = true;
+                    for (auto i = 0; i < 16; i++) {
+                        if (keys[i])
+                            m_registers[m_nibbles.second] = i;
+                    }
                     break;
                 case 0x15:
                     // Set delay timer = VX
@@ -282,20 +302,23 @@ void Chip8::execute() {
                     break;
                 case 0x29:
                     // Set I = location of sprite for digit VX
-                    // FIXME: Not sure this is the correct implementation of this instruction
-                    m_I = m_registers[m_nibbles.second];
+                    // 0x50 font memory offset
+                    m_I = m_memory[0x50 + m_nibbles.second * 5];
                     break;
                 case 0x33:
                     // Store BCD representation of VX in memory locations I, I+1 and I+2
-                    // TODO: Implement instruction
-                    break;
+                    {
+                        uint8_t temp = m_registers[m_nibbles.second];
+
+                        m_memory[m_I] = temp / 100;
+                        m_memory[m_I + 1] = (temp / 10) % 10;
+                        m_memory[m_I + 2] = temp % 10;
+
+                        break;
+                    }
                 case 0x55:
-                    printf("Opcode => %X \n", m_opcode);
-                    printf("X value: %x \n", m_nibbles.second);
                     for (auto i = 0; i <= m_nibbles.second; i++) {
                         m_memory[m_I + i] = m_registers[i];
-                        printf("Mem at %X is %X \n", m_I + i, m_memory[m_I + i]);
-                        printf("Register value: %X \n", m_registers[i]);
                     }
                     break;
                 case 0x65:
